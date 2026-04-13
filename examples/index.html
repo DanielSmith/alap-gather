@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en" style="background:#1a2f8a">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Grab and Gather — Alap</title>
+  <link rel="stylesheet" href="/examples/styles.css">
+  <link rel="stylesheet" href="/src/gather.css">
+  <link rel="stylesheet" href="/src/highnotes.css">
+</head>
+<body class="has-site-nav">
+  <nav class="site-nav">
+    <a href="https://alap.info" class="nav-brand">Alap</a>
+    <div class="nav-links">
+      <a href="https://docs.alap.info/getting-started/">Docs</a>
+      <a href="https://docs.alap.info/api-reference/">API</a>
+      <a href="https://examples.alap.info">Examples</a>
+      <a href="https://github.com/DanielSmith/alap">GitHub</a>
+    </div>
+  </nav>
+  <h1>Grab and Gather</h1>
+  <p>Open any menu, then <strong>drag an item sideways</strong> to collect it in the tray on the right.
+     Mix and match from static configs <em>and</em> live feeds.</p>
+
+  <h2>Static: Local Config</h2>
+  <p class="note">Hand-curated entries with descriptions, thumbnails, and photo credits.</p>
+
+  <div class="example">
+    <p>Find a great
+      <a id="coffeetag" class="alap" data-alap-linkitems=".coffee">coffee spot</a>
+      to start your morning.
+    </p>
+    <p><code>.coffee</code></p>
+  </div>
+
+  <div class="example">
+    <p>Explore famous
+      <a id="bridgetag" class="alap" data-alap-linkitems=".bridge">bridges</a>
+      around the world.
+    </p>
+    <p><code>.bridge</code></p>
+  </div>
+
+  <div class="example">
+    <p>Everything in
+      <a id="nyctag" class="alap" data-alap-linkitems=".nyc">New York City</a>
+      &mdash; or just
+      <a id="sftag" class="alap" data-alap-linkitems=".sf">San Francisco</a>.
+    </p>
+    <p><code>.nyc</code> &nbsp; <code>.sf</code></p>
+  </div>
+
+  <div class="example">
+    <p>
+      <a id="landmarktag" class="alap" data-alap-linkitems=".landmark">World landmarks</a>
+      &mdash; from the Golden Gate to the Sydney Harbour Bridge.
+    </p>
+    <p><code>.landmark</code></p>
+  </div>
+
+  <div class="example">
+    <p>A few of my favorite
+      <a id="cars" class="alap" data-alap-linkitems="@cars">cars</a>
+      &mdash; or
+      <a id="favorites" class="alap" data-alap-linkitems="@favorites">personal favorites</a>
+      across categories.
+    </p>
+    <p><code>@cars</code> &nbsp; <code>@favorites</code></p>
+  </div>
+
+  <h2>Dynamic: Live from Bluesky</h2>
+  <p class="note">
+    These menus are populated by the <code>:atproto:</code> protocol handler at runtime.
+    The items you see came from the network moments ago.
+  </p>
+
+  <div class="example">
+    <p>Recent posts from the
+      <a class="alap" data-alap-linkitems=":atproto:feed:eff.org:limit=5:">EFF</a>
+      &mdash; digital rights and policy.
+    </p>
+    <p><code>:atproto:feed:eff.org:limit=5:</code></p>
+  </div>
+
+  <div class="example">
+    <p>What's new at
+      <a class="alap" data-alap-linkitems=":atproto:feed:nature.com:limit=5:">Nature</a>
+      &mdash; science, fresh from the feed.
+    </p>
+    <p><code>:atproto:feed:nature.com:limit=5:</code></p>
+  </div>
+
+  <div class="example">
+    <p>The
+      <a class="alap" data-alap-linkitems=":atproto:feed:theverge.com:limit=5:">Verge</a>
+      on tech and culture.
+    </p>
+    <p><code>:atproto:feed:theverge.com:limit=5:</code></p>
+  </div>
+
+  <div class="example">
+    <p>
+      <a class="alap" data-alap-linkitems=":atproto:profile:archive.org:">Internet Archive</a>
+      &mdash; profile links across clients.
+    </p>
+    <p><code>:atproto:profile:archive.org:</code></p>
+  </div>
+
+  <h2>Mixed: Static + Dynamic in One Menu</h2>
+  <p class="note">
+    The expression grammar composes across both sources.
+    One menu, two origins.
+  </p>
+
+  <div class="example">
+    <p>
+      <a class="alap" data-alap-linkitems=".coffee | :atproto:feed:eff.org:limit=3:">Coffee spots + EFF posts</a>
+      &mdash; curated local links merged with live feed items.
+    </p>
+    <p><code>.coffee | :atproto:feed:eff.org:limit=3:</code></p>
+  </div>
+
+  <h2>External: Regular Links</h2>
+  <p class="note">
+    These are ordinary links &mdash; not Alap. Drag them onto the tray to collect them as external drops.
+  </p>
+
+  <div class="example external-links">
+    <p><strong>Music</strong></p>
+    <ul>
+      <li><a href="https://bandcamp.com">Bandcamp</a> &mdash; independent music marketplace</li>
+      <li><a href="https://www.discogs.com">Discogs</a> &mdash; music database and marketplace</li>
+      <li><a href="https://pitchfork.com">Pitchfork</a> &mdash; music reviews and features</li>
+      <li><a href="https://www.npr.org/music">NPR Music</a> &mdash; Tiny Desk and beyond</li>
+      <li><a href="https://open.spotify.com/track/4cOdK2wGLETKBW3PvgPWqT">Spotify: Bohemian Rhapsody</a> &mdash; try the ↗ button after dropping</li>
+    </ul>
+  </div>
+
+  <div class="example external-links">
+    <p><strong>Art</strong></p>
+    <ul>
+      <li><a href="https://www.moma.org">MoMA</a> &mdash; Museum of Modern Art</li>
+      <li><a href="https://artsandculture.google.com">Google Arts &amp; Culture</a> &mdash; virtual museum tours</li>
+      <li><a href="https://www.artsy.net">Artsy</a> &mdash; discover and collect art</li>
+      <li><a href="https://www.thisiscolossal.com">Colossal</a> &mdash; art, design, and visual culture</li>
+      <li><a href="https://vimeo.com/347119375">Vimeo: Sample Video</a> &mdash; try the ↗ button after dropping</li>
+    </ul>
+  </div>
+
+  <div id="gather-tray" class="gather-tray">
+    <div class="gather-tray-header">
+      <span>Collected</span>
+      <span id="gather-count" class="gather-count"></span>
+      <button id="highnotes-toggle" class="gather-folder-add" type="button" title="Toggle HighNotes visibility">&#x1f4cc;</button>
+      <button id="gather-folder-add" class="gather-folder-add" type="button" title="New folder">+</button>
+      <button id="gather-clear" class="gather-clear" type="button">Clear</button>
+    </div>
+    <ul id="gather-list" class="gather-list"></ul>
+    <div id="gather-empty" class="gather-empty">Drag menu items here</div>
+    <div class="gather-tray-footer">
+      <button id="gather-lightbox" class="gather-lightbox" type="button">View in Lightbox</button>
+      <button id="gather-lens" class="gather-lens" type="button">View in Lens</button>
+      <button id="gather-export" class="gather-export" type="button">Copy as JSON</button>
+      <button id="gather-markdown" class="gather-markdown" type="button">Copy as Markdown</button>
+      <button id="gather-bookmarks" class="gather-bookmarks" type="button">Save as Bookmarks</button>
+      <button id="gather-save" class="gather-save" type="button">Save Gather</button>
+    </div>
+  </div>
+
+  <div id="gather-dropzone" class="gather-dropzone">
+    <div class="gather-dropzone-label">Drop to collect</div>
+  </div>
+
+  <script type="module" src="/src/gather.ts"></script>
+</body>
+</html>

@@ -1,0 +1,127 @@
+/* HighNotes — floating card styles */
+
+/* Lightbox and lens must always sit above HighNotes cards (z 20000–30000) */
+:root {
+  --alap-lightbox-z-index: 40000;
+  --alap-lens-z-index: 40000;
+}
+.alap-lightbox-overlay {
+  z-index: 40000 !important;
+}
+.alap-lens-overlay {
+  z-index: 40000 !important;
+}
+
+.highnote-card {
+  width: 280px;
+  background: #1e2a48;
+  border: 1px solid #3a5070;
+  border-radius: 10px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  color: #d0d7e5;
+  font-family: system-ui, sans-serif;
+  font-size: 0.9rem;
+  overflow: hidden;
+  user-select: none;
+}
+
+.highnote-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem 0.75rem;
+  background: rgba(255, 255, 255, 0.05);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.highnote-label {
+  font-weight: 600;
+  font-size: 0.85rem;
+  color: #fff;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1;
+  min-width: 0;
+}
+
+.highnote-controls {
+  display: flex;
+  gap: 0.25rem;
+  flex-shrink: 0;
+  margin-left: 0.5rem;
+}
+
+.highnote-controls button {
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.4);
+  cursor: pointer;
+  padding: 0.15rem 0.25rem;
+  border-radius: 4px;
+  line-height: 1;
+  font-size: 1.1rem;
+}
+
+.highnote-controls button:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.highnote-thumbnail {
+  width: 100%;
+  max-height: 160px;
+  object-fit: cover;
+  display: block;
+}
+
+.highnote-description {
+  padding: 0.5rem 0.75rem;
+  margin: 0;
+  color: #aaa;
+  font-size: 0.82rem;
+  line-height: 1.4;
+}
+
+.highnote-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+  padding: 0 0.75rem 0.5rem;
+}
+
+.highnote-tag {
+  background: rgba(255, 255, 255, 0.1);
+  color: #aac4f0;
+  border-radius: 10px;
+  padding: 0.1rem 0.5rem;
+  font-size: 0.75rem;
+}
+
+.highnote-visit {
+  display: block;
+  padding: 0.5rem 0.75rem;
+  color: #88bbff;
+  text-decoration: none;
+  font-size: 0.82rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.highnote-visit:hover {
+  color: #ffd666;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.highnote-pin svg {
+  vertical-align: middle;
+}
+
+/* Collapsed state — header only, rounded bottom */
+.highnote-collapsed {
+  border-radius: 10px;
+}
+
+.highnote-collapsed .highnote-header {
+  border-bottom: none;
+  border-radius: 10px;
+}
