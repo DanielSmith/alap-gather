@@ -1,6 +1,6 @@
 {
   "name": "alap-gather",
-  "version": "1.0.0-beta1",
+  "version": "1.0.0",
   "private": true,
   "type": "module",
   "author": "Daniel Smith",

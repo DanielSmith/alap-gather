@@ -1,0 +1,57 @@
+Alap-Gather Cryptographic Provenance
+======================================
+
+This file establishes proof-of-authorship for the alap-gather project
+using a cryptographic commitment scheme (hash-based proof of prior knowledge).
+
+alap-gather is a companion module to Alap (https://alap.info), enabling
+users to collect menu items into ad-hoc groups from multiple Alap menus.
+
+
+=== Hash Commitment ===
+
+SHA256 of private authorship proof file:
+e1a8ae594ab7b0a042d1623f641134f922ddfc7345e522ccf65e67f5b8dab065
+
+Date committed: 2026-04-14
+GPG key: B268535EEC1266DCE659B37BB15CED23FA57B7C5
+
+
+=== What This Proves ===
+
+The author of this repository possesses a private file matching the
+above SHA256 hash. The file contains:
+
+- Project origins and design rationale
+- Relationship to the Alap project (alap.info)
+- Technical decisions known only to the original author
+- A cryptographic nonce to prevent brute-force attacks
+
+
+=== Verification ===
+
+If authorship is challenged:
+
+1. Author reveals the private proof file
+2. Verifier computes: shasum -a 256 authorship-proof.txt
+3. Output matches the hash above
+4. GPG-signed commit proves this hash was published at commit date
+5. OpenTimestamps proof anchors to Bitcoin blockchain
+   Verify with: ots verify PROVENANCE.txt.ots
+
+No one else can produce a file matching this hash without possessing
+the original (SHA256 preimage resistance).
+
+
+=== Related Protections ===
+
+- Layer 1: Git commit history
+- Layer 2: GPG signed commits (key B268535EEC1266DCE659B37BB15CED23FA57B7C5)
+- Layer 3: OpenTimestamps blockchain anchoring (PROVENANCE.txt.ots)
+- Layer 4: This hash commitment scheme
+
+
+=== License ===
+
+This provenance proof does not change the license terms.
+alap-gather is licensed under Apache License 2.0. See LICENSE.
