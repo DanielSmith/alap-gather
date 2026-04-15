@@ -1,6 +1,6 @@
 {
   "name": "alap-gather",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "private": false,
   "type": "module",
   "description": "Drag-and-collect UI for Alap menus — build ad-hoc link collections",
