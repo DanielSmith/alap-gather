@@ -1,5 +1,7 @@
 # Alap Gather
 
+Built on [Alap](https://alap.info/) ([GitHub](https://github.com/DanielSmith/alap)) — dynamic menus for links.
+
 Drag menu items into a side tray to build ad-hoc collections from multiple Alap menus. Mix static config entries with live protocol feeds (`:atproto:`, etc.), organize into folders, then export or view in Lightbox/Lens.
 
 ## Features
@@ -21,11 +23,14 @@ pnpm install
 pnpm dev
 ```
 
-Open `http://localhost:5173/examples/` in a browser.
+Open `http://localhost:5173/` in a browser. This is currently a single-page demo with more examples to come.
 
 ## Project structure
 
 ```
+index.html        Demo page with static, dynamic, mixed, and external link sections
+styles.css        Shared example theme
+
 src/
   gather.ts       Main module: tray UI, drag interactions, export, import
   highnotes.ts    Floating cards materialized from collected items
@@ -36,9 +41,7 @@ src/
   gather.css      Tray, folders, drag ghost, drop zone styles
   highnotes.css   Floating card styles and z-index layering
 
-examples/
-  index.html      Demo page with static, dynamic, mixed, and external link sections
-  styles.css      Shared example theme (also used by other Alap examples)
+tests/            137 tests across 4 files (vitest + happy-dom)
 ```
 
 ## How it works
