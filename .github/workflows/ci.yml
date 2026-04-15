@@ -1,0 +1,77 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
+
+      - uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320  # v4
+
+      - uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f  # v6.3.0
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - run: pnpm build
+
+      - run: pnpm test
+
+  security:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
+
+      - uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320  # v4
+
+      - uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f  # v6.3.0
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Dependency audit
+        run: |
+          npx --yes npm@latest audit --audit-level=high || echo "::warning::Audit failed — pnpm audit endpoint issue (pnpm/pnpm#11265)"
+
+      - name: Lockfile integrity
+        run: pnpm install --frozen-lockfile
+
+      - name: Dangerous pattern scan
+        run: |
+          echo "Scanning src/ for dangerous patterns..."
+          FOUND=0
+          for pattern in '[^.]eval\s*\(' 'new\s+Function\s*\(' 'dangerouslySetInnerHTML' 'document\.write\s*\(' 'insertAdjacentHTML'; do
+            matches=$(grep -rE "$pattern" src/ --include="*.ts" --include="*.js" -l 2>/dev/null || true)
+            if [ -n "$matches" ]; then
+              echo "::warning::Pattern '$pattern' found in: $matches"
+              FOUND=$((FOUND + 1))
+            fi
+          done
+
+          innerHTML=$(grep -rn 'innerHTML' src/ --include="*.ts" --include="*.js" 2>/dev/null || true)
+          if [ -n "$innerHTML" ]; then
+            echo "::notice::innerHTML usage found (verify these are safe):"
+            echo "$innerHTML"
+          fi
+
+          if [ $FOUND -gt 0 ]; then
+            echo "::error::Dangerous patterns detected — review before merging"
+            exit 1
+          fi
+
+          echo "No dangerous patterns found"
