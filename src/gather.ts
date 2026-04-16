@@ -26,8 +26,12 @@ import {
   persistGather, restoreGather, findItem, generateId,
 } from './state';
 import { initHighNotes, summonOrCreate } from './highnotes';
-
-const DRAG_THRESHOLD_PX = 8;
+import {
+  DRAG_THRESHOLD_PX, IMPORT_FEEDBACK_MS, FETCH_TIMEOUT_MS,
+  CARD_WIDTH, CARD_GAP, GATHER_ITEM_MIME, GATHER_FOLDER_MIME, ALAP_ITEM_MIME,
+  MENU_ITEM_SELECTOR,
+} from './constants';
+import { showButtonFeedback } from './ui-helpers';
 
 const trayList = document.getElementById('gather-list') as HTMLUListElement;
 const trayEmpty = document.getElementById('gather-empty') as HTMLElement;
@@ -152,7 +156,7 @@ function createFolderDragGhost(name: string): HTMLElement {
 
 // Position ghost during folder drags
 gatherTray.addEventListener('dragover', (e) => {
-  if (!e.dataTransfer?.types.includes('application/x-gather-folder')) return;
+  if (!e.dataTransfer?.types.includes(GATHER_FOLDER_MIME)) return;
   if (folderDragGhost) {
     folderDragGhost.style.left = `${e.clientX}px`;
     folderDragGhost.style.top = `${e.clientY}px`;
@@ -171,7 +175,7 @@ function renderFolderItem(folder: GatherFolder): HTMLLIElement {
   handle.textContent = '\u2630';
   handle.draggable = true;
   handle.addEventListener('dragstart', (e) => {
-    e.dataTransfer?.setData('application/x-gather-folder', folder.id);
+    e.dataTransfer?.setData(GATHER_FOLDER_MIME, folder.id);
     e.dataTransfer!.effectAllowed = 'move';
 
     // Use transparent 1px image so native ghost doesn't show
@@ -236,13 +240,13 @@ function renderFolderItem(folder: GatherFolder): HTMLLIElement {
   // Drop target: items drop INTO folder, folders reorder (before/after)
   li.addEventListener('dragover', (e) => {
     const types = e.dataTransfer?.types;
-    if (!types?.includes('application/x-gather-item') && !types?.includes('application/x-gather-folder')) return;
+    if (!types?.includes(GATHER_ITEM_MIME) && !types?.includes(GATHER_FOLDER_MIME)) return;
     e.preventDefault();
     e.dataTransfer!.dropEffect = 'move';
 
     li.classList.remove('gather-drop-before', 'gather-drop-after', 'gather-folder-drop-target');
 
-    if (types?.includes('application/x-gather-folder')) {
+    if (types?.includes(GATHER_FOLDER_MIME)) {
       const rect = li.getBoundingClientRect();
       const y = (e.clientY - rect.top) / rect.height;
       li.classList.add(y < 0.5 ? 'gather-drop-before' : 'gather-drop-after');
@@ -259,7 +263,7 @@ function renderFolderItem(folder: GatherFolder): HTMLLIElement {
     li.classList.remove('gather-folder-drop-target', 'gather-drop-before', 'gather-drop-after');
 
     // Item dropped onto folder
-    const itemId = e.dataTransfer?.getData('application/x-gather-item');
+    const itemId = e.dataTransfer?.getData(GATHER_ITEM_MIME);
     if (itemId) {
       const item = collected.find((c) => c.id === itemId);
       if (item) {
@@ -271,7 +275,7 @@ function renderFolderItem(folder: GatherFolder): HTMLLIElement {
     }
 
     // Folder dropped — reorder
-    const folderId = e.dataTransfer?.getData('application/x-gather-folder');
+    const folderId = e.dataTransfer?.getData(GATHER_FOLDER_MIME);
     if (!folderId || folderId === folder.id) return;
     const draggedFolder = folders.find((f) => f.id === folderId);
     if (!draggedFolder) return;
@@ -341,7 +345,7 @@ trayHeader.addEventListener('click', (e) => {
 
 // Drop on header = move item to root
 trayHeader.addEventListener('dragover', (e) => {
-  if (!e.dataTransfer?.types.includes('application/x-gather-item')) return;
+  if (!e.dataTransfer?.types.includes(GATHER_ITEM_MIME)) return;
   e.preventDefault();
   e.dataTransfer!.dropEffect = 'move';
   trayHeader.classList.add('gather-folder-drop-target');
@@ -353,7 +357,7 @@ trayHeader.addEventListener('drop', (e) => {
   e.preventDefault();
   trayHeader.classList.remove('gather-folder-drop-target');
 
-  const itemId = e.dataTransfer?.getData('application/x-gather-item');
+  const itemId = e.dataTransfer?.getData(GATHER_ITEM_MIME);
   if (itemId) {
     const item = collected.find((c) => c.id === itemId);
     if (item) {
@@ -385,7 +389,7 @@ function renderTrayItem(item: CollectedItem): HTMLLIElement {
   li.draggable = true;
 
   li.addEventListener('dragstart', (e) => {
-    e.dataTransfer?.setData('application/x-gather-item', item.id);
+    e.dataTransfer?.setData(GATHER_ITEM_MIME, item.id);
     e.dataTransfer!.effectAllowed = 'move';
     li.classList.add('gather-dragging');
   });
@@ -405,8 +409,7 @@ function renderTrayItem(item: CollectedItem): HTMLLIElement {
     const liRect = li.getBoundingClientRect();
     const trayRect = tray ? tray.getBoundingClientRect() : liRect;
     // Position to the left of the tray, vertically aligned with the item
-    const cardWidth = 280;
-    const x = trayRect.left - cardWidth - 16;
+    const x = trayRect.left - CARD_WIDTH - CARD_GAP;
     const y = liRect.top;
     summonOrCreate(item.id, x, y);
   });
@@ -414,7 +417,7 @@ function renderTrayItem(item: CollectedItem): HTMLLIElement {
   // Drop target: dropping an item onto another item moves it into the same folder
   // and reorders it next to the target
   li.addEventListener('dragover', (e) => {
-    if (!e.dataTransfer?.types.includes('application/x-gather-item')) return;
+    if (!e.dataTransfer?.types.includes(GATHER_ITEM_MIME)) return;
     e.preventDefault();
     e.dataTransfer!.dropEffect = 'move';
     li.classList.remove('gather-drop-before', 'gather-drop-after');
@@ -430,7 +433,7 @@ function renderTrayItem(item: CollectedItem): HTMLLIElement {
     const before = li.classList.contains('gather-drop-before');
     li.classList.remove('gather-drop-before', 'gather-drop-after');
 
-    const draggedId = e.dataTransfer?.getData('application/x-gather-item');
+    const draggedId = e.dataTransfer?.getData(GATHER_ITEM_MIME);
     if (!draggedId || draggedId === item.id) return;
     const dragged = collected.find((c) => c.id === draggedId);
     if (!dragged) return;
@@ -538,9 +541,7 @@ function exportJSON(): void {
   const config = buildExportConfig();
   navigator.clipboard.writeText(JSON.stringify(config, null, 2));
 
-  const original = exportBtn.textContent;
-  exportBtn.textContent = 'Copied!';
-  setTimeout(() => { exportBtn.textContent = original; }, 1500);
+  showButtonFeedback(exportBtn, 'Copied!');
 }
 
 // --- Markdown export (Obsidian-friendly, folder-aware) ---
@@ -604,9 +605,7 @@ function exportMarkdown(): void {
 
   navigator.clipboard.writeText(lines.join('\n'));
 
-  const original = markdownBtn.textContent;
-  markdownBtn.textContent = 'Copied!';
-  setTimeout(() => { markdownBtn.textContent = original; }, 1500);
+  showButtonFeedback(markdownBtn, 'Copied!');
 }
 
 // --- Netscape bookmark HTML export ---
@@ -654,9 +653,7 @@ function exportBookmarks(): void {
   a.click();
   URL.revokeObjectURL(url);
 
-  const original = bookmarksBtn.textContent;
-  bookmarksBtn.textContent = 'Saved!';
-  setTimeout(() => { bookmarksBtn.textContent = original; }, 1500);
+  showButtonFeedback(bookmarksBtn, 'Saved!');
 }
 
 // --- Save Gather (full round-trip JSON) ---
@@ -690,9 +687,7 @@ function saveGather(): void {
   a.click();
   URL.revokeObjectURL(url);
 
-  const original = saveBtn.textContent;
-  saveBtn.textContent = 'Saved!';
-  setTimeout(() => { saveBtn.textContent = original; }, 1500);
+  showButtonFeedback(saveBtn, 'Saved!');
 }
 
 // --- JSON import (file drop or paste) ---
@@ -779,7 +774,7 @@ function handleImportFile(file: File): void {
 function showImportFeedback(count: number): void {
   if (count === 0) return;
   gatherTray.classList.add('json-import-active');
-  setTimeout(() => { gatherTray.classList.remove('json-import-active'); }, 1200);
+  setTimeout(() => { gatherTray.classList.remove('json-import-active'); }, IMPORT_FEEDBACK_MS);
 }
 
 gatherTray.addEventListener('paste', (e: ClipboardEvent) => {
@@ -876,7 +871,7 @@ function onTrayDrop(e: DragEvent): void {
   }
 
   // Check for enriched Alap item data (piggybacked from menu dragstart)
-  const alapItemJson = e.dataTransfer.getData('application/x-alap-item');
+  const alapItemJson = e.dataTransfer.getData(ALAP_ITEM_MIME);
   if (alapItemJson) {
     try {
       const item: CollectedItem = JSON.parse(alapItemJson);
@@ -953,7 +948,7 @@ async function tryEnrich(item: CollectedItem): Promise<boolean> {
   try {
     const fetchUrl = provider.endpoint.replace('${url}', encodeURIComponent(item.url));
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 5000);
+    const timeout = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
 
     const response = await fetch(fetchUrl, { signal: controller.signal });
     clearTimeout(timeout);
@@ -1021,7 +1016,7 @@ async function onEnrichClick(id: string, btn: HTMLButtonElement): Promise<void> 
     btn.textContent = '\u2014';
   }
 
-  setTimeout(() => { btn.remove(); }, 1200);
+  setTimeout(() => { btn.remove(); }, IMPORT_FEEDBACK_MS);
 }
 
 // --- Remove, clear, and export handlers ---
@@ -1181,7 +1176,7 @@ function toCollectedItemFromDom(el: HTMLAnchorElement): CollectedItem {
  */
 document.addEventListener('dragstart', (e) => {
   const menuItem = (e.target as HTMLElement).closest<HTMLAnchorElement>(
-    '#alapelem a[role="menuitem"]',
+    MENU_ITEM_SELECTOR,
   );
   if (!menuItem || !e.dataTransfer) return;
   if (!engine) return;
@@ -1193,7 +1188,7 @@ document.addEventListener('dragstart', (e) => {
   const resolved = lookupLink(engine, url, triggerInfo);
   if (resolved) {
     const item = toCollectedItem(resolved);
-    e.dataTransfer.setData('application/x-alap-item', JSON.stringify(item));
+    e.dataTransfer.setData(ALAP_ITEM_MIME, JSON.stringify(item));
     console.log('[Gather] enriched dragstart:', item.id, item.label, 'tags:', item.tags);
   }
 }, { capture: true });
@@ -1215,7 +1210,7 @@ function onPointerDown(e: PointerEvent): void {
   if (e.button !== 0) return;
 
   const menuItem = (e.target as HTMLElement).closest<HTMLAnchorElement>(
-    '#alapelem a[role="menuitem"]',
+    MENU_ITEM_SELECTOR,
   );
   if (!menuItem) return;
 

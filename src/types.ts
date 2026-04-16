@@ -41,7 +41,6 @@ export interface HighNoteCard {
   x: number;
   y: number;
   mode: 'pinned' | 'anchored';
-  anchorSelector?: string;
   visible: boolean;
   collapsed: boolean;
 }

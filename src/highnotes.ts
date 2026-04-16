@@ -28,13 +28,16 @@ import 'alap/lens.css';
 import 'alap/lightbox.css';
 import type { CollectedItem, HighNoteCard } from './types';
 import { cards, collected, findItem, generateId, persistCards, restoreCards } from './state';
+import {
+  GATHER_ITEM_MIME, MIN_VISIBLE_PX, HIGHLIGHT_MS, TRANSITION_CLEAR_MS, HIGHLIGHT_SHADOW,
+} from './constants';
+import { updatePinButton } from './ui-helpers';
 
 // --- Constants ---
 
 const Z_FLOOR = 20000;
 const Z_CEILING = 30000;
 const Z_STEP = 100;
-const GATHER_ITEM_MIME = 'application/x-gather-item';
 
 // --- Stacking state ---
 
@@ -128,9 +131,7 @@ function renderCard(card: HighNoteCard): HTMLElement {
   const pinBtn = document.createElement('button');
   pinBtn.className = 'highnote-pin';
   pinBtn.type = 'button';
-  pinBtn.title = card.mode === 'pinned' ? 'Unpin (scroll with page)' : 'Pin to viewport';
-  pinBtn.setAttribute('aria-label', pinBtn.title);
-  pinBtn.innerHTML = card.mode === 'pinned' ? pinFilledSvg() : pinOutlineSvg();
+  updatePinButton(pinBtn, card.mode);
   pinBtn.addEventListener('click', () => togglePin(card.id));
   controls.appendChild(pinBtn);
 
@@ -254,8 +255,7 @@ function makeDraggable(el: HTMLElement, card: HighNoteCard): void {
       // Clamp so the header always stays grabbable
       const headerH = header.offsetHeight;
       const cardW = el.offsetWidth;
-      const minVisible = 40;
-      card.x = Math.max(-cardW + minVisible, Math.min(window.innerWidth - minVisible, card.x));
+      card.x = Math.max(-cardW + MIN_VISIBLE_PX, Math.min(window.innerWidth - MIN_VISIBLE_PX, card.x));
       card.y = Math.max(0, Math.min(window.innerHeight - headerH, card.y));
       el.style.left = `${card.x}px`;
       el.style.top = `${card.y}px`;
@@ -290,11 +290,7 @@ function togglePin(cardId: string): void {
   }
 
   const pinBtn = el.querySelector('.highnote-pin') as HTMLButtonElement;
-  if (pinBtn) {
-    pinBtn.innerHTML = card.mode === 'pinned' ? pinFilledSvg() : pinOutlineSvg();
-    pinBtn.title = card.mode === 'pinned' ? 'Unpin (scroll with page)' : 'Pin to viewport';
-    pinBtn.setAttribute('aria-label', pinBtn.title);
-  }
+  if (pinBtn) updatePinButton(pinBtn, card.mode);
 
   persistCards();
 }
@@ -374,11 +370,11 @@ function surfaceExisting(card: HighNoteCard): void {
 
     // Brief highlight to draw the eye
     el.style.transition = 'box-shadow 0.3s';
-    el.style.boxShadow = '0 0 0 3px #88bbff, 0 8px 32px rgba(0, 0, 0, 0.4)';
+    el.style.boxShadow = HIGHLIGHT_SHADOW;
     setTimeout(() => {
       el.style.boxShadow = '';
-      setTimeout(() => { el.style.transition = ''; }, 300);
-    }, 800);
+      setTimeout(() => { el.style.transition = ''; }, TRANSITION_CLEAR_MS);
+    }, HIGHLIGHT_MS);
 
     // If document-anchored, scroll viewport to show it
     if (card.mode === 'anchored') {
@@ -512,16 +508,6 @@ function restoreRenderedCards(): void {
   if (highWaterMark >= Z_CEILING) rebaseZIndices();
 }
 
-// --- SVG icons ---
-
-function pinFilledSvg(): string {
-  return '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M16 12V4h1V2H7v2h1v8l-2 2v2h5v6l1 1 1-1v-6h5v-2z"/></svg>';
-}
-
-function pinOutlineSvg(): string {
-  return '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 12V4h1V2H7v2h1v8l-2 2v2h5v6l1 1 1-1v-6h5v-2z"/></svg>';
-}
-
 // --- Summon or create (called from gather tray double-click) ---
 
 export function summonOrCreate(itemId: string, nearX: number, nearY: number): void {
@@ -542,11 +528,7 @@ export function summonOrCreate(itemId: string, nearX: number, nearY: number): vo
 
       // Update pin icon
       const pinBtn = el.querySelector('.highnote-pin') as HTMLButtonElement;
-      if (pinBtn) {
-        pinBtn.innerHTML = pinFilledSvg();
-        pinBtn.title = 'Unpin (scroll with page)';
-        pinBtn.setAttribute('aria-label', pinBtn.title);
-      }
+      if (pinBtn) updatePinButton(pinBtn, 'pinned');
     }
 
     surfaceExisting(existing);
